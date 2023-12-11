@@ -4,22 +4,28 @@ body, html {
     font-family: Arial, sans-serif;
   }
   
-  #container {
+  #main {
     display: flex;
     justify-content: center;
+    align-items: flex-start; /* Aligns items to the top */
+    margin: 20px;
+  }
+  
+  #container {
     flex-direction: column;
-    align-items: center;
+    margin-right: 20px; /* Add space between the container and the search results */
+    padding: 20px;
+    width: calc(50% - 20px); /* Adjust width accounting for margin */
   }
   
   .panel {
-    width: 20%;
     padding: 20px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    margin-top: 50px;
+    margin-bottom: 20px; /* Space between panels */
   }
   
-  input[type=text] {
+  input[type=text], input[type=date] {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
@@ -39,14 +45,20 @@ body, html {
   button:hover {
     opacity: 0.8;
   }
-
+  
   #movies {
     display: flex;
     flex-direction: column;
-    
-    align-items: center;
-    justify-content: center;
-    width: 80%; /* Full width */
-    margin-bottom: 100px; /* Add some space above the search results */
+    align-items: flex-start; /* Align items to the start of the flex container */
+    max-width: 50%; /* Set maximum width for the search results */
+    width: 100%; /* Adjust the width as needed */
+    margin-left: 20px; /* Add space between the container and the search results */
   }
-    
+  
+  /* Add CSS for individual movie items if needed */
+  .movie-item {
+    margin-bottom: 10px; /* Space between movie items */
+    padding: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
