@@ -1,64 +1,62 @@
 body, html {
-    height: 100%;
-    margin: 0;
-    font-family: Arial, sans-serif;
-  }
-  
-  #main {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Aligns items to the top */
-    margin: 20px;
-  }
-  
-  #container {
-    flex-direction: column;
-    margin-right: 20px; /* Add space between the container and the search results */
-    padding: 20px;
-    width: calc(50% - 20px); /* Adjust width accounting for margin */
-  }
-  
-  .panel {
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    margin-bottom: 20px; /* Space between panels */
-  }
-  
-  input[type=text], input[type=date] {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    box-sizing: border-box;
-  }
-  
-  button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 14px 20px;
-    margin: 10px 0;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-  }
-  
-  button:hover {
-    opacity: 0.8;
-  }
-  
-  #movies {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Align items to the start of the flex container */
-    max-width: 50%; /* Set maximum width for the search results */
-    width: 100%; /* Adjust the width as needed */
-    margin-left: 20px; /* Add space between the container and the search results */
-  }
-  
-  /* Add CSS for individual movie items if needed */
-  .movie-item {
-    margin-bottom: 10px; /* Space between movie items */
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
+  height: 100%;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+#main {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 20px;
+}
+
+#container {
+  flex-direction: column;
+  margin-right: 20px;
+  padding: 20px;
+  width: calc(50% - 20px);
+}
+
+.panel {
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+input[type=text], input[type=date] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 10px 0;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  opacity: 0.8;
+}
+
+#movies {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 50%;
+  width: 100%;
+  margin-left: 20px;
+}
+
+.movie-item {
+  margin-bottom: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

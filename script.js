@@ -1,27 +1,10 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, query, where, getDocs,
-  deleteDoc, doc, updateDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// Your Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAzd-Lx5c-Wt_0KheDqwiqSZB8QSh2cwnc",
-  authDomain: "de-ve-de-f5997.firebaseapp.com",
-  projectId: "de-ve-de-f5997",
-  storageBucket: "de-ve-de-f5997.appspot.com",
-  messagingSenderId: "535714584444",
-  appId: "1:535714584444:web:64c3d52a1d07dd62dcf6f9"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db, collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc } from "./firebase.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
   const addMovieButton = document.querySelector('#add-btn');
   const searchButton = document.querySelector('#search-btn');
   const moviesElem = document.querySelector('#movies');
+  const favoritesButton = document.querySelector('#favorites-btn');
 
   async function addMovie(movie) {
     const movieQuery = query(collection(db, 'movies'), where('title', '==', movie.title));
@@ -30,10 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert('A movie with this title already exists!');
       return;
     }
-  
     try {
       await addDoc(collection(db, 'movies'), movie);
       alert('Movie added!');
+      refreshMovieList();
     } catch (error) {
       console.error("Error adding document: ", error);
     }
@@ -42,56 +25,77 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function deleteMovie(movieId) {
     try {
       await deleteDoc(doc(db, 'movies', movieId));
-      displayAllMovies(); // Optionally refresh the list
+      refreshMovieList();
     } catch (error) {
       console.error("Error deleting movie: ", error);
     }
   }
 
-  async function markAsWatched(movieId) {
+  async function toggleWatched(movie, watchedButton) {
+    movie.watched = !movie.watched;
     try {
-      const movieRef = doc(db, 'movies', movieId);
-      await updateDoc(movieRef, {
-        watched: true
-      });
-      displayAllMovies(); // Optionally refresh the list
+      const movieRef = doc(db, 'movies', movie.id);
+      await updateDoc(movieRef, { watched: movie.watched });
+      watchedButton.textContent = movie.watched ? 'Remove from Watched' : 'Mark as Watched';
     } catch (error) {
-      console.error("Error updating movie: ", error);
+      console.error("Error updating watched status: ", error);
+      movie.watched = !movie.watched;
     }
+  }
+
+  async function toggleFavorite(movie, favoritesButton) {
+    movie.favorites = !movie.favorites;
+    try {
+      const movieRef = doc(db, 'movies', movie.id);
+      await updateDoc(movieRef, { favorites: movie.favorites });
+      favoritesButton.textContent = movie.favorites ? 'Remove from Favorites' : 'Add to Favorites';
+    } catch (error) {
+      console.error("Error updating favorite status: ", error);
+      movie.favorites = !movie.favorites;
+    }
+  }
+
+  async function refreshMovieList() {
+    moviesElem.innerHTML = '';
+    const querySnapshot = await getDocs(collection(db, 'movies'));
+    querySnapshot.forEach((doc) => {
+      createMovieElement({ id: doc.id, ...doc.data() });
+    });
   }
 
   function createMovieElement(movie) {
     const containerElem = document.createElement('div');
+    containerElem.setAttribute('data-movie-id', movie.id);
+    
     const titleElem = document.createElement('h2');
-    const genreElem = document.createElement('p');
-    const releaseDateElem = document.createElement('p');
-    const deleteButton = document.createElement('button');
-    const watchedButton = document.createElement('button');
-
     titleElem.textContent = movie.title;
+    
+    const genreElem = document.createElement('p');
     genreElem.textContent = movie.genre;
+    
+    const releaseDateElem = document.createElement('p');
     releaseDateElem.textContent = `Release Date: ${movie.releaseDate}`;
+    
+    const deleteButton = document.createElement('button');
     deleteButton.textContent = 'Delete';
-    watchedButton.textContent = movie.watched ? 'Watched' : 'Mark as Watched';
+    deleteButton.onclick = () => deleteMovie(movie.id);
+    
+    const watchedButton = document.createElement('button');
+    watchedButton.textContent = movie.watched ? 'Remove from Watched' : 'Mark as Watched';
+    watchedButton.onclick = () => toggleWatched(movie, watchedButton);
+    
+    const favoritesButton = document.createElement('button');
+    favoritesButton.textContent = movie.favorites ? 'Remove from Favorites' : 'Add to Favorites';
+    favoritesButton.onclick = () => toggleFavorite(movie, favoritesButton);
 
     containerElem.appendChild(titleElem);
     containerElem.appendChild(genreElem);
     containerElem.appendChild(releaseDateElem);
     containerElem.appendChild(deleteButton);
     containerElem.appendChild(watchedButton);
-
-    deleteButton.onclick = () => deleteMovie(movie.id);
-    watchedButton.onclick = () => markAsWatched(movie.id);
+    containerElem.appendChild(favoritesButton);
 
     moviesElem.appendChild(containerElem);
-  }
-
-  async function displayAllMovies() {
-    moviesElem.innerHTML = '';
-    const querySnapshot = await getDocs(collection(db, 'movies'));
-    querySnapshot.forEach((doc) => {
-      createMovieElement({ id: doc.id, ...doc.data() });
-    });
   }
 
   addMovieButton.addEventListener('click', async () => {
@@ -104,41 +108,49 @@ document.addEventListener('DOMContentLoaded', async () => {
       genre: genreInput.value,
       releaseDate: releaseDateInput.value,
       watched: false,
+      favorites: false,
       createdAt: new Date().toISOString()
     };
 
-    await addMovie(movie);
     titleInput.value = '';
     genreInput.value = '';
     releaseDateInput.value = '';
+
+    await addMovie(movie);
   });
 
   searchButton.addEventListener('click', async () => {
     const searchValue = document.querySelector('#search-input').value.trim();
-    if (searchValue) {
-      await searchMovies(searchValue);
-    } else {
-      alert("Please enter a search term.");
-    }
+    await searchMovies(searchValue);
   });
 
   async function searchMovies(searchTerm) {
-    moviesElem.innerHTML = ''; // Clear the list before displaying search results
+    moviesElem.innerHTML = '';
     const searchQuery = query(collection(db, 'movies'), where('title', '==', searchTerm));
-        const querySnapshot = await getDocs(searchQuery);
-        if (querySnapshot.empty) {
-          moviesElem.innerHTML = 'No movies found matching your search.';
-        } else {
-          querySnapshot.forEach((doc) => {
-            createMovieElement({ id: doc.id, ...doc.data() });
-          });
-        }
-      }
-    
-      // Optional: If you want to have a button to manually trigger the display of all movies
-      const showAllMoviesButton = document.querySelector('#show-all-btn');
-      if (showAllMoviesButton) {
-        showAllMoviesButton.addEventListener('click', displayAllMovies);
-      }
-    });
-    
+    const querySnapshot = await getDocs(searchQuery);
+    if (querySnapshot.empty) {
+      moviesElem.innerHTML = '<p>No movies found matching your search.</p>';
+    } else {
+      querySnapshot.forEach((doc) => {
+        createMovieElement({ id: doc.id, ...doc.data() });
+      });
+    }
+  }
+
+  favoritesButton.addEventListener('click', async () => {
+    await displayFavorites();
+  });
+
+  async function displayFavorites() {
+    moviesElem.innerHTML = '';
+    const favoritesQuery = query(collection(db, 'movies'), where('favorites', '==', true));
+    const querySnapshot = await getDocs(favoritesQuery);
+    if (querySnapshot.empty) {
+      moviesElem.innerHTML = '<p>No favorite movies yet.</p>';
+    } else {
+      querySnapshot.forEach((doc) => {
+        createMovieElement({ id: doc.id, ...doc.data() });
+      });
+    }
+  }
+});
